@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CoffeeBot</title>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar Section Start (For Later)-->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <button class="new-chat-btn" id="new-chat-btn">
+            <span>+</span> New Chat
+          </button>
+        </div>
+        <div class="recent-section">
+          <h3>Recent Chats</h3>
+          <ul id="recent-list"></ul>
+        </div>
+        <div class="sidebar-footer">
+          <button class="sidebar-btn" id="settings-btn">Settings</button>
+          <button class="sidebar-btn logout" id="logout-btn">Logout</button>
+        </div>
+      </aside>
+      <!-- Sidebar Section End-->
+      <header class="chat-header">
+        <h2>☕ Coffee Chatbot</h2>
+        <p>Your personal barista, powered by AI</p>
+      </header>
+      <div class="chat-interface">
+        <div class="initial-section" id="initial-section">
+          <p class="welcome-user" id="welcome-user">Greetings user</p>
+          <p>Shall we get brewing?</p>
+        </div>
+        <!-- Chat History section for later-->
+        <div class="chat-history" id="chat-history"></div>
+      </div>
+      <div class="input-area">
+        <div class="input-box">
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Ask about beans, roasts, or recipes..."
+            autocomplete="off"
+          />
+          <button class="send-btn" id="send-btn">Send</button>
+        </div>
+        <p class="disclaimer">
+          Recommendations are AI-generated based on coffee profiles.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
