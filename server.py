@@ -1,88 +1,117 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# 1. Load the secret .env file
+# 1. Load env vars
 load_dotenv()
 
 app = Flask(__name__)
-
-# 2. Enable CORS
 CORS(app)
 
-# 3. Configure Gemini
+# 2. Configure API Key
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     print("Error: GEMINI_API_KEY not found in .env file")
-
 genai.configure(api_key=api_key)
 
-# 4. OPTIMIZED SYSTEM INSTRUCTION
-# We prioritize Logic over Persona here to ensure it recommends properly.
+# 3. DEFINE YOUR MODELS
+# "High" is the smart one (first 20 messages)
+# "Lite" is the cheap one (after 20 messages)
+MODEL_HIGH_NAME = "gemini-2.5-flash"      # Standard 2.5
+MODEL_LITE_NAME = "gemini-2.5-flash-lite" # Cheaper/Faster 2.5 Lite
+
+# We create two model objects globally
+model_high = genai.GenerativeModel(MODEL_HIGH_NAME)
+model_lite = genai.GenerativeModel(MODEL_LITE_NAME)
+
 SYSTEM_INSTRUCTION = """
 ### ROLE
 You are 'The Barista Bot,' a medieval innkeeper serving magical bean elixirs. 
 You speak in MEDIEVAL ENGLISH (e.g., "Hark," "Thou," "Potion").
-
-### TASK
-Your goal is to recommend a specific coffee drink.
-
-### RULES
-1. **MEMORY CHECK:** Look at what the user has ALREADY told you.
-2. **MISSING INFO:** If you do NOT know the user's preference for (1) Temperature (Hot/Cold) and (2) Flavor Profile (Sweet/Bitter/Strong), ask for it specifically.
-3. **THE STOP CONDITION:** If the user has provided enough info (or gave a detailed prompt like "I want a strong cold coffee"), DO NOT ASK MORE QUESTIONS. 
-4. **EXECUTION:** Immediately recommend a drink. Give it a fantasy name, explain the ingredients, and wish them luck.
-
-**GUARDRAILS:**
-- If the user talks about non-coffee topics, reply: "My scrolls contain only coffee spells. Let us return to the brew!"
 """
 
-# Initialize the model configuration
-model_config = genai.GenerativeModel(
-    model_name="gemini-2.5-flash-lite",
-    system_instruction=SYSTEM_INSTRUCTION
-)
-
-# 5. IN-MEMORY STORAGE FOR CHAT SESSIONS
-# This allows the bot to remember the conversation context.
+# 4. MEMORY STORAGE
+# Structure: 
+# { 
+#   "session_id": { 
+#       "chat": chat_object, 
+#       "count": 0, 
+#       "current_tier": "high" 
+#   } 
+# }
 chat_sessions = {}
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
         data = request.json
         user_message = data.get("message")
-        # The frontend should ideally send a session ID. 
-        # If not, we default to 'default_user' (which is risky if multiple people use it at once).
         session_id = data.get("sessionId", "default_user")
 
         if not user_message:
             return jsonify({"error": "No message provided"}), 400
 
-        # --- MEMORY LOGIC START ---
-        # Check if a chat session already exists for this user ID
+        # --- INITIALIZE SESSION IF MISSING ---
         if session_id not in chat_sessions:
-            # Create a new chat session with history
-            chat_sessions[session_id] = model_config.start_chat(history=[])
-        
-        chat_session = chat_sessions[session_id]
-        # --- MEMORY LOGIC END ---
+            # Start with HIGH tier model
+            print(f"New session {session_id}: Starting with {MODEL_HIGH_NAME}")
+            new_chat = model_high.start_chat(history=[
+                {"role": "user", "parts": SYSTEM_INSTRUCTION},
+                {"role": "model", "parts": "I understand. I am the Barista Bot."}
+            ])
+            chat_sessions[session_id] = {
+                "chat": new_chat,
+                "count": 0,
+                "current_tier": "high"
+            }
 
-        # Send message to the SPECIFIC session (which contains history)
-        response = chat_session.send_message(user_message)
-        
-        return jsonify({"reply": response.text})
+        # Get session data
+        session_data = chat_sessions[session_id]
+        session_data["count"] += 1
+        current_count = session_data["count"]
+
+        # --- THE SWITCH LOGIC (High -> Lite) ---
+        # If we just hit message 21, and we are still on 'high', switch to 'lite'
+        if current_count > 20 and session_data["current_tier"] == "high":
+            print(f"⚠️ Limit reached ({current_count} msgs). Switching {session_id} to LITE model.")
+            
+            # 1. Grab history from the old chat
+            old_history = session_data["chat"].history
+            
+            # 2. Start new chat with LITE model, injecting old history
+            #    (We use the same history list so the bot remembers context)
+            new_lite_chat = model_lite.start_chat(history=old_history)
+            
+            # 3. Update our session storage
+            session_data["chat"] = new_lite_chat
+            session_data["current_tier"] = "lite"
+
+        # --- SEND MESSAGE ---
+        chat_object = session_data["chat"]
+        response = chat_object.send_message(user_message)
+
+        return jsonify({
+            "reply": response.text
+        })
 
     except Exception as e:
-        print(f"Error generating response: {e}")
-        return jsonify({"reply": "The magical scrolls are tangled. I cannot read the coffee omens right now."}), 500
+        print(f"Error: {e}")
+        return jsonify({"reply": "The magical scrolls are tangled (Server Error)."}), 500
 
-@app.route('/')
-def home():
-    return "Barista Bot Server is running!", 200
+@app.route('/reset', methods=['POST'])
+def reset():
+    data = request.json
+    session_id = data.get("sessionId", "default_user")
+    if session_id in chat_sessions:
+        del chat_sessions[session_id]
+        return jsonify({"message": "Memory cleared."})
+    return jsonify({"message": "No memory found."})
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(debug=True)
