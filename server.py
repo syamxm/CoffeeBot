@@ -4,48 +4,48 @@ from flask_cors import CORS
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# 1. Load env vars
+# 1. Load the secret .env file
 load_dotenv()
 
 app = Flask(__name__)
+
+# 2. Enable CORS
 CORS(app)
 
-# 2. Configure API Key
+# 3. Configure Gemini
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     print("Error: GEMINI_API_KEY not found in .env file")
+
 genai.configure(api_key=api_key)
 
-# 3. DEFINE YOUR MODELS
-# "High" is the smart one (first 20 messages)
-# "Lite" is the cheap one (after 20 messages)
-MODEL_HIGH_NAME = "gemini-2.5-flash"      # Standard 2.5
-MODEL_LITE_NAME = "gemini-2.5-flash-lite" # Cheaper/Faster 2.5 Lite
-
-# We create two model objects globally
-model_high = genai.GenerativeModel(MODEL_HIGH_NAME)
-model_lite = genai.GenerativeModel(MODEL_LITE_NAME)
-
+# 4. OPTIMIZED SYSTEM INSTRUCTION
 SYSTEM_INSTRUCTION = """
 ### ROLE
 You are 'The Barista Bot,' a medieval innkeeper serving magical bean elixirs. 
 You speak in MEDIEVAL ENGLISH (e.g., "Hark," "Thou," "Potion").
+
+### TASK
+Your goal is to recommend a specific coffee drink.
+
+### RULES
+1. **MEMORY CHECK:** Look at what the user has ALREADY told you.
+2. **MISSING INFO:** If you do NOT know the user's preference for (1) Temperature (Hot/Cold) and (2) Flavor Profile (Sweet/Bitter/Strong), ask for it specifically.
+3. **THE STOP CONDITION:** If the user has provided enough info (or gave a detailed prompt like "I want a strong cold coffee"), DO NOT ASK MORE QUESTIONS. 
+4. **EXECUTION:** Immediately recommend a drink. Give it a fantasy name, explain the ingredients, and wish them luck.
+
+**GUARDRAILS:**
+- If the user talks about non-coffee topics, reply: "My scrolls contain only coffee spells. Let us return to the brew!"
 """
 
-# 4. MEMORY STORAGE
-# Structure: 
-# { 
-#   "session_id": { 
-#       "chat": chat_object, 
-#       "count": 0, 
-#       "current_tier": "high" 
-#   } 
-# }
-chat_sessions = {}
+# --- DEFINE MODELS ---
+# We now need TWO model definitions to switch between them
+model_high = genai.GenerativeModel(model_name="gemini-2.5-flash", system_instruction=SYSTEM_INSTRUCTION)
+model_lite = genai.GenerativeModel(model_name="gemini-2.5-flash-lite", system_instruction=SYSTEM_INSTRUCTION)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+# 5. IN-MEMORY STORAGE FOR CHAT SESSIONS
+# Structure: { "session_id": { "chat": chat_object, "count": 0, "tier": "high" } }
+chat_sessions = {}
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -57,61 +57,48 @@ def chat():
         if not user_message:
             return jsonify({"error": "No message provided"}), 400
 
-        # --- INITIALIZE SESSION IF MISSING ---
+        # --- MEMORY LOGIC START ---
         if session_id not in chat_sessions:
-            # Start with HIGH tier model
-            print(f"New session {session_id}: Starting with {MODEL_HIGH_NAME}")
-            new_chat = model_high.start_chat(history=[
-                {"role": "user", "parts": SYSTEM_INSTRUCTION},
-                {"role": "model", "parts": "I understand. I am the Barista Bot."}
-            ])
+            # Start new session with HIGH tier model
             chat_sessions[session_id] = {
-                "chat": new_chat,
+                "chat": model_high.start_chat(history=[]),
                 "count": 0,
-                "current_tier": "high"
+                "tier": "high"
             }
-
-        # Get session data
+        
         session_data = chat_sessions[session_id]
         session_data["count"] += 1
-        current_count = session_data["count"]
-
-        # --- THE SWITCH LOGIC (High -> Lite) ---
-        # If we just hit message 21, and we are still on 'high', switch to 'lite'
-        if current_count > 20 and session_data["current_tier"] == "high":
-            print(f"⚠️ Limit reached ({current_count} msgs). Switching {session_id} to LITE model.")
+        
+        # --- MODEL SWITCHING LOGIC ---
+        # If user exceeds 20 messages and is still on "high", switch to "lite"
+        if session_data["count"] > 20 and session_data["tier"] == "high":
+            print(f"Switching {session_id} to Lite model (Message #{session_data['count']})")
             
-            # 1. Grab history from the old chat
+            # Save old history
             old_history = session_data["chat"].history
             
-            # 2. Start new chat with LITE model, injecting old history
-            #    (We use the same history list so the bot remembers context)
-            new_lite_chat = model_lite.start_chat(history=old_history)
-            
-            # 3. Update our session storage
-            session_data["chat"] = new_lite_chat
-            session_data["current_tier"] = "lite"
+            # Start new chat with Lite model using old history
+            session_data["chat"] = model_lite.start_chat(history=old_history)
+            session_data["tier"] = "lite"
 
-        # --- SEND MESSAGE ---
-        chat_object = session_data["chat"]
-        response = chat_object.send_message(user_message)
+        chat_session = session_data["chat"]
+        # --- MEMORY LOGIC END ---
 
-        return jsonify({
-            "reply": response.text
-        })
+        # Send message
+        response = chat_session.send_message(user_message)
+        
+        return jsonify({"reply": response.text})
 
     except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"reply": "The magical scrolls are tangled (Server Error)."}), 500
+        print(f"Error generating response: {e}")
+        return jsonify({"reply": "The magical scrolls are tangled. I cannot read the coffee omens right now."}), 500
 
-@app.route('/reset', methods=['POST'])
-def reset():
-    data = request.json
-    session_id = data.get("sessionId", "default_user")
-    if session_id in chat_sessions:
-        del chat_sessions[session_id]
-        return jsonify({"message": "Memory cleared."})
-    return jsonify({"message": "No memory found."})
+@app.route('/')
+def home():
+    # Keep render_template if you want your HTML to work, 
+    # otherwise change back to string if you only want API.
+    return render_template('index.html') 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
