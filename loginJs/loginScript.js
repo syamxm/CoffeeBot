@@ -1,6 +1,7 @@
 import * as LoginService from "../firebase/loginFirebase.js";
 import * as Input from "./loginInput.js";
 import * as UI from "./loginUIRenderer.js";
+import * as loadingScreen from "../signupJs/loadingScreen.js";
 
 document.getElementById("loginBtn").addEventListener("click", async () => {
   // 1. Get Data from Input
@@ -14,7 +15,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     await LoginService.loginWithUsername(inputs.username, inputs.password);
 
     // 4. Update UI on Success
-    UI.showLoginSuccess();
+    loadingScreen.showLoadingScreen("login");
   } catch (error) {
     // 5. Update UI on Failure
     UI.showLoginError(error);
