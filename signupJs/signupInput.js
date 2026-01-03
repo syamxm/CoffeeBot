@@ -8,3 +8,17 @@ export function getSignupInputs() {
     confirmPassword: document.getElementById("confirmPassword").value.trim(),
   };
 }
+
+export function validateSignup(inputs) {
+  const { username, email, phoneNumber, password, confirmPassword } = inputs;
+
+  if (!username || !email || !phoneNumber || !password || !confirmPassword) {
+    alert("Please fill in ALL fields.");
+    return false;
+  }
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return false;
+  }
+  return true;
+}
