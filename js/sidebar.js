@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     
-    
     // Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
     document.body.appendChild(settingsModal);
 
