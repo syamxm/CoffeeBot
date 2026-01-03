@@ -131,13 +131,6 @@ recentList.addEventListener("click", async (e) => {
   }
 });
 
-// 5. Logout Logic (MISSING IN YOUR SNIPPET)
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    signOut(auth).catch((error) => console.error("Sign out failed:", error));
-  });
-}
-
 // Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
 document.body.appendChild(settingsModal);
 
