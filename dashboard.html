@@ -8,8 +8,13 @@
     <link rel="stylesheet" href="css/sidebar.css" />
   </head>
   <body>
+    <script>
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+      }
+    </script>
     <div class="dashboard-container">
-      <!-- Sidebar Section Start (For Later)-->
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <button class="new-chat-btn" id="new-chat-btn">
@@ -35,7 +40,6 @@
           <p class="welcome-user" id="welcome-user">Greetings user</p>
           <p>Shall we get brewing?</p>
         </div>
-        <!-- Chat History section for later-->
         <div class="chat-history" id="chat-history"></div>
       </div>
       <div class="input-area">
