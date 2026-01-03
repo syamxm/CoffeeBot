@@ -7,7 +7,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
   const inputs = Input.getLoginInputs();
 
   // 2. Validate Data (Design Logic)
-  if (!Input.validateLogin(inputs.username, inputs)) return;
+  if (!Input.validateLogin(inputs.username, inputs.password)) return;
 
   try {
     // 3. Perform Login (Backend Logic)
