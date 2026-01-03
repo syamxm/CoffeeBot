@@ -5,7 +5,7 @@
 
 body {
   font-family: "Segoe UI", sans-serif;
-  background-color: #f3e5ab; /* Latte color */
+  background-color: #FAF7F2; /* Latte color */
   margin: 0;
   height: 100vh;
   overflow: hidden; /* Prevents the browser window from scrolling */
@@ -135,7 +135,7 @@ body {
   text-align: center;
   padding: 0;
   padding-top: 20px;
-  background-color: #f3e5ab; /* Matches body to ensure it stays opaque */
+  background-color: #FAF7F2; /* Matches body to ensure it stays opaque */
   z-index: 11;
 }
 
@@ -188,14 +188,14 @@ body {
 
 /* AI Bubble: White with Coffee Bean Text */
 .ai-message .message-content {
-  background-color: white;
+  background-color: #E6D3B1;
   color: #4b3621;
   border-bottom-left-radius: 2px;
 }
 
 /* User Bubble: Coffee color with White Text */
 .user-message .message-content {
-  background-color: #6f4e37;
+  background-color: #6F4E37;
   color: white;
   border-bottom-right-radius: 2px;
 }
@@ -204,7 +204,7 @@ body {
 .input-area {
   width: 100%;
   padding: 10px 20px 20px 20px;
-  background: linear-gradient(transparent, #f3e5ab 30%); /* Fade effect */
+  background: linear-gradient(transparent, #FAF7F2 30%); /* Fade effect */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -215,7 +215,7 @@ body {
 .input-box {
   width: 100%;
   max-width: 810px; /* Matches the 90% of 900px look */
-  background: white;
+  background: #FFFFFF;
   padding: 8px 15px;
   border-radius: 25px;
   display: flex;
@@ -234,7 +234,7 @@ body {
 }
 
 #send-btn {
-  background-color: #6f4e37;
+  background-color: #5C4033;
   color: white;
   border: none;
   width: 40px;
