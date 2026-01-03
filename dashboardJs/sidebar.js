@@ -2,6 +2,7 @@
 //added imports for logout functionality
 import { auth } from "../firebase/firebaseConfig.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import * as loadingScreen from "../signupJs/loadingScreen.js";
 
 const newChatBtn = document.getElementById("new-chat-btn");
 const dashboardContainer = document.querySelector(".dashboard-container");
@@ -28,14 +29,17 @@ newChatBtn.addEventListener("click", () => {
 
 // Logout Functionality
 if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      console.log("User signed out");
-      window.location.href = "index.html"; // Redirect after logout
-    } catch (error) {
-      console.error("Sign out failed:", error);
-    }
+  logoutBtn.addEventListener("click", () => {
+    loadingScreen.showLoadingScreen("logout");
+
+    // Delay sign out to allow the loading screen animation to play
+    setTimeout(async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Sign out failed:", error);
+      }
+    }, 1500);
   });
 } else {
   console.error("Logout button not found in DOM");
