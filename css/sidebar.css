@@ -1,3 +1,4 @@
+
 /* Sidebar Styles */
 .sidebar {
   position: fixed;
@@ -165,10 +166,165 @@
   background: #fceceb;
 }
 
+/* Modal Styles */
+.modal {
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.modal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #4b3621;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
 .setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 1rem;
   color: #4b3621;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #6f4e37;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+  background-color: #202020;
+}
+
+body.dark-mode .sidebar,
+body.dark-mode .modal-content {
+  background-color: #2d2d2d;
+  border-right-color: #404040;
+}
+
+body.dark-mode .chat-header,
+body.dark-mode .input-area {
+  background-color: #202020;
+}
+
+body.dark-mode .input-area {
+  background: linear-gradient(transparent, #202020 30%);
+}
+
+body.dark-mode .input-wrapper {
+  background-color: #333;
+  border-color: #444;
+}
+
+body.dark-mode #user-input {
+  color: #e0e0e0;
+}
+
+body.dark-mode .chat-header h2,
+body.dark-mode .initial-section p,
+body.dark-mode .sidebar-btn,
+body.dark-mode .recent-item,
+body.dark-mode .modal-header h3,
+body.dark-mode .setting-item,
+body.dark-mode .close-btn {
+  color: #e0e0e0;
+}
+
+body.dark-mode .sidebar-btn:hover,
+body.dark-mode .recent-item:hover {
+  background-color: #404040;
+}
+
+body.dark-mode .ai-message .message-content {
+  background-color: #333;
+  color: #e0e0e0;
+}
+
+body.dark-mode .user-message .message-content {
+  background-color: #8b5e3c;
 }
