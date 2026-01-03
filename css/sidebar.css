@@ -16,6 +16,7 @@
   flex-direction: column;
   gap: 30px;
   box-shadow: 4px 0 15px rgba(0, 0, 0, 0.03);
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1); /* Stronger shadow for better overlap visibility */
 }
 
 .sidebar:hover {
@@ -288,7 +289,8 @@ body.dark-mode .modal-content {
 }
 
 body.dark-mode .chat-header,
-body.dark-mode .input-area {
+body.dark-mode .input-area, 
+body.dark-mode .input-box{
   background-color: #202020;
 }
 
@@ -296,16 +298,12 @@ body.dark-mode .input-area {
   background: linear-gradient(transparent, #202020 30%);
 }
 
-body.dark-mode .input-wrapper {
-  background-color: #333;
-  border-color: #444;
-}
-
 body.dark-mode #user-input {
   color: #e0e0e0;
 }
 
 body.dark-mode .chat-header h2,
+body.dark-mode .chat-header p,
 body.dark-mode .initial-section p,
 body.dark-mode .sidebar-btn,
 body.dark-mode .recent-item,
