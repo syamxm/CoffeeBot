@@ -12,7 +12,6 @@ const userInput = document.getElementById("user-input");
 const settingsBtn = document.getElementById("settings-btn");
 const settingsModal = document.getElementById("settings-modal");
 const closeSettingsBtn = document.getElementById("close-settings");
-const themeToggle = document.getElementById("theme-toggle");
 
 const logoutBtn = document.getElementById("logout-btn");
 
@@ -43,11 +42,6 @@ window.addEventListener("click", (e) => {
   if (e.target === settingsModal) {
     settingsModal.classList.add("hidden");
   }
-});
-
-// Dark Mode Toggle
-themeToggle.addEventListener("change", () => {
-  document.body.classList.toggle("dark-mode");
 });
 
 // Logout Functionality
