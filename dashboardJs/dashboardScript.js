@@ -59,7 +59,7 @@ async function handleSend() {
     );
   } catch (error) {
     UI.removeLoadingIndicator();
-    UI.addMessageToUI("Error connecting to server.", "ai");
+    UI.addMessageToUI("⚠️ Error connecting to server.", "ai");
     console.error(error);
   }
 }
