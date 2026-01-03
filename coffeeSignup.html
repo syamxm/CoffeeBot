@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <script>
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+      }
+    </script>
     <div class="container">
       <div class="signup-box">
         <h2>Join Coffee Bot ☕</h2>
