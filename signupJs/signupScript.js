@@ -22,7 +22,9 @@ try {
 document.getElementById("sendOtpBtn").addEventListener("click", async () => {
   const inputs = Input.getSignupInputs();
 
-  if (!Input.validateSignup(inputs)) return;
+  //Validating inputs
+  const isValid = await Input.validateSignup(inputs);
+  if (!isValid) return;
 
   try {
     UI.updateStatus("Sending OTP...");
