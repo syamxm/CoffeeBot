@@ -1,5 +1,5 @@
 import * as SignUpService from "../firebase/signupFirebase.js";
-import * as UI from "./signupUIRenderer.js";
+import * as UI from "./loadingScreen.js";
 import * as Input from "./signupInput.js";
 
 // Global State for the registration session
@@ -73,8 +73,7 @@ document.getElementById("verifyOtpBtn").addEventListener("click", async () => {
       username: inputs.username,
     });
 
-    alert("Signup Successful! Click OK to go to Login.");
-    window.location.href = "index.html";
+      UI.showLoadingScreen("signup");
   } catch (error) {
     UI.showSignupError(error, "verify");
   }
