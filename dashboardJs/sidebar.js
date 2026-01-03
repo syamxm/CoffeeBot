@@ -1,47 +1,66 @@
 // d:\Coding Files\CoffeeBot\CoffeeBot\js\dashboard.js
-document.addEventListener("DOMContentLoaded", () => {
-  const newChatBtn = document.getElementById("new-chat-btn");
-  const dashboardContainer = document.querySelector(".dashboard-container");
-  const initialSection = document.getElementById("initial-section");
-  const chatHistory = document.getElementById("chat-history");
-  const userInput = document.getElementById("user-input");
+//added imports for logout functionality
+import { auth } from "../firebase/firebaseConfig.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
-  const settingsBtn = document.getElementById("settings-btn");
-  const settingsModal = document.getElementById("settings-modal");
-  const closeSettingsBtn = document.getElementById("close-settings");
-  const themeToggle = document.getElementById("theme-toggle");
+const newChatBtn = document.getElementById("new-chat-btn");
+const dashboardContainer = document.querySelector(".dashboard-container");
+const initialSection = document.getElementById("initial-section");
+const chatHistory = document.getElementById("chat-history");
+const userInput = document.getElementById("user-input");
 
-  // New Chat Functionality
-  newChatBtn.addEventListener("click", () => {
-    dashboardContainer.classList.remove("chat-active");
-    initialSection.classList.remove("hidden");
-    chatHistory.classList.remove("visible");
-    chatHistory.innerHTML = ""; // Clear chat history
-    userInput.value = "";
-    userInput.focus();
-  });
+const settingsBtn = document.getElementById("settings-btn");
+const settingsModal = document.getElementById("settings-modal");
+const closeSettingsBtn = document.getElementById("close-settings");
+const themeToggle = document.getElementById("theme-toggle");
 
-  // Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
-  document.body.appendChild(settingsModal);
+const logoutBtn = document.getElementById("logout-btn");
 
-  // Settings Modal Logic
-  settingsBtn.addEventListener("click", () => {
-    settingsModal.classList.remove("hidden");
-  });
+// New Chat Functionality
+newChatBtn.addEventListener("click", () => {
+  dashboardContainer.classList.remove("chat-active");
+  initialSection.classList.remove("hidden");
+  chatHistory.classList.remove("visible");
+  chatHistory.innerHTML = ""; // Clear chat history
+  userInput.value = "";
+  userInput.focus();
+});
 
-  closeSettingsBtn.addEventListener("click", () => {
+// Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
+document.body.appendChild(settingsModal);
+
+// Settings Modal Logic
+settingsBtn.addEventListener("click", () => {
+  settingsModal.classList.remove("hidden");
+});
+
+closeSettingsBtn.addEventListener("click", () => {
+  settingsModal.classList.add("hidden");
+});
+
+// Close modal when clicking outside content
+window.addEventListener("click", (e) => {
+  if (e.target === settingsModal) {
     settingsModal.classList.add("hidden");
-  });
+  }
+});
 
-  // Close modal when clicking outside content
-  window.addEventListener("click", (e) => {
-    if (e.target === settingsModal) {
-      settingsModal.classList.add("hidden");
+// Dark Mode Toggle
+themeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark-mode");
+});
+
+// Logout Functionality
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      console.log("User signed out");
+      window.location.href = "index.html"; // Redirect after logout
+    } catch (error) {
+      console.error("Sign out failed:", error);
     }
   });
-
-  // Dark Mode Toggle
-  themeToggle.addEventListener("change", () => {
-    document.body.classList.toggle("dark-mode");
-  });
-});
+} else {
+  console.error("Logout button not found in DOM");
+}
