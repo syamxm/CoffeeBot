@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <script>
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+      }
+    </script>
     <div class="container">
       <div class="signup-box">
         <h2>Join Coffee Bot ☕</h2>
@@ -51,10 +57,24 @@
             <label>Confirm Password</label>
             <input type="password" id="confirmPassword" required />
           </div>
+
+          <div id="recaptcha-container"></div>
+
+          <button type="button" id="sendOtpBtn">Send OTP</button>
+
           <div class="redirect-group">
             <a href="index.html">Already have an account? Login Now!</a>
           </div>
         </form>
-      </div> 
+        <div id="otpSection" style="display: none">
+          <p>Enter the code sent to your phone</p>
+          <input type="text" id="otpInput" placeholder="123456" />
+          <button type="button" id="verifyOtpBtn">Verify & Sign Up</button>
+        </div>
+
+        <p id="statusMessage"></p>
+      </div>
+    </div>
+    <script type="module" src="signupJs/signupScript.js"></script>
   </body>
 </html>

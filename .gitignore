@@ -1,1 +1,14 @@
+#ignoring CODEOWNERS file
 CODEOWNERS
+
+#ignoring eslint and node files
+node_modules
+eslint.config.mjs
+package-lock.json
+package.json
+
+#ignoring environment file
+.venv
+
+#ignoring .env file
+.env
