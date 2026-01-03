@@ -6,13 +6,10 @@ export function getLoginInputs() {
   };
 }
 
-export function validateLogin(inputs) {
-  const { username, password } = inputs;
-
+export function validateLogin(username, password) {
   if (!username || !password) {
-    alert("Please fill in ALL fields.");
+    alert("Please enter both username and password!");
     return false;
   }
-
   return true;
 }
