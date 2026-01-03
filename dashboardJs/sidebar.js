@@ -25,24 +25,6 @@ newChatBtn.addEventListener("click", () => {
   userInput.focus();
 });
 
-// Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
-document.body.appendChild(settingsModal);
-
-// Settings Modal Logic
-settingsBtn.addEventListener("click", () => {
-  settingsModal.classList.remove("hidden");
-});
-
-closeSettingsBtn.addEventListener("click", () => {
-  settingsModal.classList.add("hidden");
-});
-
-// Close modal when clicking outside content
-window.addEventListener("click", (e) => {
-  if (e.target === settingsModal) {
-    settingsModal.classList.add("hidden");
-  }
-});
 
 // Logout Functionality
 if (logoutBtn) {

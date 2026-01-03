@@ -6,7 +6,8 @@
   bottom: 0;
   width: 260px;
   background-color: #F1E6D8;
-  border-right: 1px solid #e5e5e5;
+  border-right: 2px solid #e2d1c3;
+  box-shadow: 2px 0 8px rgba(75, 54, 33, 0.08);
   transform: translateX(-200px); /* Small sliver visible to trigger hover */
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
@@ -14,8 +15,6 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
-  box-shadow: 0px 0 15px rgba(0, 0, 0, 0.03);
-  box-shadow: 0px 0 15px rgba(0, 0, 0, 0.1); /* Stronger shadow for better overlap visibility */
 }
 
 .sidebar:hover {

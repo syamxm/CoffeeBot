@@ -138,6 +138,9 @@ if (logoutBtn) {
   });
 }
 
+// Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
+document.body.appendChild(settingsModal);
+
 // 6. Settings & Theme Logic (MISSING IN YOUR SNIPPET)
 if (settingsBtn) {
   settingsBtn.addEventListener("click", () => {
