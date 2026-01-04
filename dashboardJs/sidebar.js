@@ -10,6 +10,7 @@ const initialSection = document.getElementById("initial-section");
 const chatHistory = document.getElementById("chat-history");
 const userInput = document.getElementById("user-input");
 
+const editUserBtn = document.getElementById("edit-user-btn");
 const logoutBtn = document.getElementById("logout-btn");
 
 // New Chat Functionality
@@ -17,7 +18,7 @@ newChatBtn.addEventListener("click", () => {
   dashboardContainer.classList.remove("chat-active");
   initialSection.classList.remove("hidden");
   chatHistory.classList.remove("visible");
-  
+
   // Robustly clear chat history to ensure no nodes remain
   while (chatHistory.firstChild) {
     chatHistory.removeChild(chatHistory.firstChild);
@@ -27,9 +28,19 @@ newChatBtn.addEventListener("click", () => {
   userInput.focus();
 
   // Clear active selection from sidebar items
-  document.querySelectorAll(".recent-item").forEach(item => item.classList.remove("active"));
+  document
+    .querySelectorAll(".recent-item")
+    .forEach((item) => item.classList.remove("active"));
 });
 
+// Edit User Info Button Functionality
+if (editUserBtn) {
+  editUserBtn.addEventListener("click", () => {
+    window.location.href = "editUserInfo.html";
+  });
+} else {
+  console.error("Edit User Info button not found in DOM");
+}
 
 // Logout Functionality
 if (logoutBtn) {
