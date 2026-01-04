@@ -1,5 +1,6 @@
 import * as SignUpService from "../firebase/signupFirebase.js";
-import * as UI from "./loadingScreen.js";
+import * as Load from "./loadingScreen.js";
+import * as UI from "./signupUIRenderer.js";
 import * as Input from "./signupInput.js";
 
 // Global State for the registration session
@@ -33,7 +34,7 @@ document.getElementById("sendOtpBtn").addEventListener("click", async () => {
     try {
       confirmationResult = await SignUpService.sendOtp(
         inputs.phoneNumber,
-        appVerifier
+        appVerifier,
       );
     } catch (error) {
       console.error("SMS failed", error);
@@ -73,7 +74,7 @@ document.getElementById("verifyOtpBtn").addEventListener("click", async () => {
       username: inputs.username,
     });
 
-      UI.showLoadingScreen("signup");
+    Load.showLoadingScreen("signup");
   } catch (error) {
     UI.showSignupError(error, "verify");
   }
