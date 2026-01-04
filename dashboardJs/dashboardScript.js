@@ -1,8 +1,5 @@
 import { auth } from "../firebase/firebaseConfig.js";
-import {
-  onAuthStateChanged,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import * as ChatService from "./chatService.js";
 import * as UI from "./dashboardUIRenderer.js";
 
@@ -14,7 +11,6 @@ const sendBtn = document.getElementById("send-btn");
 const inputField = document.getElementById("user-input");
 const newChatBtn = document.getElementById("new-chat-btn");
 const recentList = document.getElementById("recent-list");
-const logoutBtn = document.getElementById("logout-btn");
 const settingsBtn = document.getElementById("settings-btn");
 const settingsModal = document.getElementById("settings-modal");
 const closeSettingsBtn = document.getElementById("close-settings");
@@ -74,14 +70,6 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
 
-    // Update Welcome Text
-    const welcomeText = document.getElementById("welcome-user");
-    if (welcomeText) {
-      welcomeText.textContent = `Greetings ${
-        user.displayName || user.email.split("@")[0]
-      }`;
-    }
-
     // Subscribe to DB changes
     ChatService.subscribeToRecentChats(user.uid, (chats, isEmpty) => {
       UI.renderRecentList(chats, isEmpty);
@@ -134,7 +122,7 @@ recentList.addEventListener("click", async (e) => {
 // Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
 document.body.appendChild(settingsModal);
 
-// 6. Settings & Theme Logic (MISSING IN YOUR SNIPPET)
+// 6. Settings & Theme Logic
 if (settingsBtn) {
   settingsBtn.addEventListener("click", () => {
     settingsModal.classList.remove("hidden");

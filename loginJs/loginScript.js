@@ -13,6 +13,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
   try {
     // 3. Perform Login (Backend Logic)
     await LoginService.loginWithUsername(inputs.username, inputs.password);
+    localStorage.setItem("username", inputs.username); // Cache username for later use
 
     // 4. Update UI on Success
     loadingScreen.showLoadingScreen("login");
