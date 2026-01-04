@@ -115,7 +115,7 @@ Click the Go Live button on the bottom right of the VS Code window.Then, open `i
 
 ## Usage Flow
 
-1. User registers via the sign-up page
+1. User registers via the sign-up page (with OTP verification)
 2. User logs in using authenticated credentials
 3. Dashboard displays a personalised welcome message
 4. User interacts with CoffeeBot to receive coffee recommendations
