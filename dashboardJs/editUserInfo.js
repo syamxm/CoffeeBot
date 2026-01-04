@@ -16,6 +16,13 @@ const currentPasswordInput = document.getElementById("currentPassword");
 const newPasswordInput = document.getElementById("newPassword");
 const confirmNewPasswordInput = document.getElementById("confirmNewPassword");
 const updateBtn = document.getElementById("updateBtn");
+const backBtn = document.getElementById("backBtn");
+
+if (backBtn) {
+  backBtn.addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+  });
+}
 
 // Load current user data from Firestore on page load
 onAuthStateChanged(auth, async (user) => {
