@@ -9,6 +9,10 @@ import {
   doc,
   getDoc,
   updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const usernameInput = document.getElementById("username");
@@ -24,21 +28,19 @@ if (backBtn) {
   });
 }
 
-// Load current user data from Firestore on page load
+// Global user check and UI prep
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     try {
-      // Assuming your users are stored in a 'users' collection with the UID as the document ID
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
-        usernameInput.value = userDoc.data().username || "";
+        console.log("User is here");
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
   } else {
-    // Redirect to login if not authenticated
     window.location.href = "login.html";
   }
 });
@@ -52,6 +54,12 @@ updateBtn.addEventListener("click", async () => {
   const newPassword = newPasswordInput.value;
   const confirmNewPassword = confirmNewPasswordInput.value;
 
+  // Validation
+  if (!newUsername) {
+    alert("Username cannot be empty.");
+    return;
+  }
+
   if (!currentPassword) {
     alert("Please enter your current password to confirm changes.");
     return;
@@ -63,25 +71,47 @@ updateBtn.addEventListener("click", async () => {
   }
 
   try {
-    // 1. Re-authenticate the user (required for password updates)
+    // 1. CHECK FOR DUPLICATE USERNAME (Proper way)
+    // We search the collection for any user who already has this username
+    const q = query(
+      collection(db, "users"),
+      where("username", "==", newUsername),
+    );
+    const querySnapshot = await getDocs(q);
+
+    // If a document is found AND it's not the current user's document
+    let isTaken = false;
+    querySnapshot.forEach((doc) => {
+      if (doc.id !== user.uid) isTaken = true;
+    });
+
+    if (isTaken) {
+      alert("Username already taken. Please choose another one.");
+      return;
+    }
+
+    // 2. RE-AUTHENTICATE
     const credential = EmailAuthProvider.credential(
       user.email,
       currentPassword,
     );
     await reauthenticateWithCredential(user, credential);
 
-    // 2. Update password if a new one is provided
+    // 3. UPDATE PASSWORD (If provided)
     if (newPassword) {
       await updatePassword(user, newPassword);
     }
 
-    // 3. Update username in Firestore
+    // 4. UPDATE FIRESTORE & LOCAL STORAGE
     const userDocRef = doc(db, "users", user.uid);
     await updateDoc(userDocRef, { username: newUsername });
 
-    alert("User information updated successfully!");
+    // Update local storage so the dashboard reflects the change immediately
+    localStorage.setItem("username", newUsername);
 
-    // Clear password fields for security
+    alert("Profile updated successfully!");
+
+    // Clear password fields
     currentPasswordInput.value = "";
     newPasswordInput.value = "";
     confirmNewPasswordInput.value = "";
