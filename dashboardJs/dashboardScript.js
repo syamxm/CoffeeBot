@@ -70,14 +70,6 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
 
-    // Update Welcome Text
-    const welcomeText = document.getElementById("welcome-user");
-    if (welcomeText) {
-      welcomeText.textContent = `Greetings ${
-        user.displayName || user.email.split("@")[0]
-      }`;
-    }
-
     // Subscribe to DB changes
     ChatService.subscribeToRecentChats(user.uid, (chats, isEmpty) => {
       UI.renderRecentList(chats, isEmpty);
