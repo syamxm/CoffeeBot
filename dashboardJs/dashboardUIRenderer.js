@@ -24,8 +24,8 @@ export function showInitialSection() {
 
 export function switchToChatView() {
   if (!initialSection.classList.contains("hidden")) {
-    initialSection.classList.add("hidden");
-    initialSection.style.display = "none";
+    setTimeout(() => initialSection.classList.add("hidden"), 0);
+    setTimeout(() => (initialSection.style.display = "none"), 1000);
 
     setTimeout(() => (chatHistory.style.display = "flex"), 500);
     setTimeout(() => chatHistory.classList.add("visible"), 500);

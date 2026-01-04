@@ -1,50 +1,51 @@
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# 1. Load the secret .env file
+# 1. Load env vars
 load_dotenv()
 
 app = Flask(__name__)
 
-# 2. Enable CORS
+# 2. Enable CORS (Essential for separate frontend)
 CORS(app)
 
-# 3. Configure Gemini
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    print("Error: GEMINI_API_KEY not found in .env file")
+# 3. Load Keys
+KEYS = {
+    "razfan": os.getenv("GEMINI_API_KEY_RAZFAN"),
+    "syamim": os.getenv("GEMINI_API_KEY_SYAMIM"),
+    "hateem": os.getenv("GEMINI_API_KEY_HATEEM")
+}
 
-genai.configure(api_key=api_key)
-
-# 4. OPTIMIZED SYSTEM INSTRUCTION
+# 4. System Instruction
 SYSTEM_INSTRUCTION = """
 ### ROLE
 You are 'The Barista Bot,' a medieval innkeeper serving magical bean elixirs. 
-You speak in MEDIEVAL ENGLISH (e.g., "Hark," "Thou," "Potion").
+You speak in MEDIEVAL ENGLISH (e.g., "Hark," "Thou," "Potion," "Brew").
 
-### TASK
-Your goal is to recommend a specific coffee drink.
+### KNOWLEDGE BASE
+- **Zus Coffee:** Spanish Latte, CEO Latte, Thunder, Buttercrème Latte, Velvet Creme.
+- **Kenangan Coffee:** Kenangan Latte (Gula Aren), Avocado Coffee, Salted Caramel Macchiato, Hojicha Latte.
 
 ### RULES
-1. **MEMORY CHECK:** Look at what the user has ALREADY told you.
-2. **MISSING INFO:** If you do NOT know the user's preference for (1) Temperature (Hot/Cold) and (2) Flavor Profile (Sweet/Bitter/Strong), ask for it specifically.
-3. **THE STOP CONDITION:** If the user has provided enough info (or gave a detailed prompt like "I want a strong cold coffee"), DO NOT ASK MORE QUESTIONS. 
-4. **EXECUTION:** Immediately recommend a drink. Give it a fantasy name, explain the ingredients, and wish them luck.
-
-**GUARDRAILS:**
-- If the user talks about non-coffee topics, reply: "My scrolls contain only coffee spells. Let us return to the brew!"
+1. If user asks for a signature drink from the list, recommend it and **name the cafe**.
+2. If generic request, recommend drink **without** naming the cafe.
+3. If non-coffee topic, refuse politely.
 """
 
-# --- DEFINE MODELS ---
-# We now need TWO model definitions to switch between them
-model_high = genai.GenerativeModel(model_name="gemini-2.5-flash", system_instruction=SYSTEM_INSTRUCTION)
-model_lite = genai.GenerativeModel(model_name="gemini-2.5-flash-lite", system_instruction=SYSTEM_INSTRUCTION)
+# 5. Rotation Logic
+def get_rotation_state(count):
+    # Phase 1: High Model (Flash)
+    if count <= 20: return "razfan", "gemini-2.5-flash"
+    elif count <= 40: return "syamim", "gemini-2.5-flash"
+    elif count <= 60: return "hateem", "gemini-2.5-flash"
+    # Phase 2: Lite Model (Flash-Lite)
+    elif count <= 80: return "razfan", "gemini-2.5-flash-lite"
+    elif count <= 100: return "syamim", "gemini-2.5-flash-lite"
+    else: return "hateem", "gemini-2.5-flash-lite"
 
-# 5. IN-MEMORY STORAGE FOR CHAT SESSIONS
-# Structure: { "session_id": { "chat": chat_object, "count": 0, "tier": "high" } }
 chat_sessions = {}
 
 @app.route('/chat', methods=['POST'])
@@ -57,48 +58,51 @@ def chat():
         if not user_message:
             return jsonify({"error": "No message provided"}), 400
 
-        # --- MEMORY LOGIC START ---
+        # Init Session
         if session_id not in chat_sessions:
-            # Start new session with HIGH tier model
-            chat_sessions[session_id] = {
-                "chat": model_high.start_chat(history=[]),
-                "count": 0,
-                "tier": "high"
-            }
+            chat_sessions[session_id] = { "chat": None, "count": 0, "owner": None, "model_name": None }
         
         session_data = chat_sessions[session_id]
         session_data["count"] += 1
-        
-        # --- MODEL SWITCHING LOGIC ---
-        # If user exceeds 20 messages and is still on "high", switch to "lite"
-        if session_data["count"] > 20 and session_data["tier"] == "high":
-            print(f"Switching {session_id} to Lite model (Message #{session_data['count']})")
-            
-            # Save old history
-            old_history = session_data["chat"].history
-            
-            # Start new chat with Lite model using old history
-            session_data["chat"] = model_lite.start_chat(history=old_history)
-            session_data["tier"] = "lite"
+        current_count = session_data["count"]
 
-        chat_session = session_data["chat"]
-        # --- MEMORY LOGIC END ---
-
-        # Send message
-        response = chat_session.send_message(user_message)
+        # --- ROTATION LOGIC ---
+        target_owner, target_model_name = get_rotation_state(current_count)
         
+        needs_switch = (
+            session_data["chat"] is None or
+            session_data["owner"] != target_owner or 
+            session_data["model_name"] != target_model_name
+        )
+
+        if needs_switch:
+            print(f"[{session_id}] Switching to Owner: {target_owner} | Model: {target_model_name}")
+            
+            old_history = []
+            if session_data["chat"] is not None:
+                old_history = session_data["chat"].history
+
+            active_key = KEYS.get(target_owner)
+            if not active_key:
+                return jsonify({"reply": f"Missing API Key for {target_owner}!"}), 500
+            
+            genai.configure(api_key=active_key)
+            new_model = genai.GenerativeModel(model_name=target_model_name, system_instruction=SYSTEM_INSTRUCTION)
+            session_data["chat"] = new_model.start_chat(history=old_history)
+            
+            session_data["owner"] = target_owner
+            session_data["model_name"] = target_model_name
+        else:
+            # Ensure correct key is active
+            genai.configure(api_key=KEYS.get(session_data["owner"]))
+
+        response = session_data["chat"].send_message(user_message)
         return jsonify({"reply": response.text})
 
     except Exception as e:
-        print(f"Error generating response: {e}")
-        return jsonify({"reply": "The magical scrolls are tangled. I cannot read the coffee omens right now."}), 500
-
-@app.route('/')
-def home():
-    # Keep render_template if you want your HTML to work, 
-    # otherwise change back to string if you only want API.
-    return render_template('index.html') 
+        print(f"Server Error: {e}")
+        return jsonify({"reply": "The magical scrolls are tangled (Server Error)."}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=True)
