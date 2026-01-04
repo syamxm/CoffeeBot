@@ -40,7 +40,7 @@ async function handleSend() {
       currentUser.uid,
       currentChatId,
       text,
-      "user"
+      "user",
     );
 
     // Get AI Response (Backend)
@@ -55,7 +55,7 @@ async function handleSend() {
       currentUser.uid,
       currentChatId,
       data.reply,
-      "ai"
+      "ai",
     );
   } catch (error) {
     UI.removeLoadingIndicator();
