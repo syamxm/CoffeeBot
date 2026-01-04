@@ -16,7 +16,7 @@ CORS(app)
 KEYS = {
     "razfan": os.getenv("GEMINI_API_KEY_RAZFAN"),
     "syamim": os.getenv("GEMINI_API_KEY_SYAMIM"),
-    "hateem": os.getenv("GEMINI_API_KEY_HATEEM")
+    "hateem": os.getenv("GEMINI_API_KEY_HATEEM"),
 }
 
 # 4. System Instruction
@@ -35,20 +35,29 @@ You speak in MEDIEVAL ENGLISH (e.g., "Hark," "Thou," "Potion," "Brew").
 3. If non-coffee topic, refuse politely.
 """
 
+
 # 5. Rotation Logic
 def get_rotation_state(count):
     # Phase 1: High Model (Flash)
-    if count <= 20: return "razfan", "gemini-2.5-flash"
-    elif count <= 40: return "syamim", "gemini-2.5-flash"
-    elif count <= 60: return "hateem", "gemini-2.5-flash"
+    if count <= 20:
+        return "razfan", "gemini-2.5-flash"
+    elif count <= 40:
+        return "syamim", "gemini-2.5-flash"
+    elif count <= 60:
+        return "hateem", "gemini-2.5-flash"
     # Phase 2: Lite Model (Flash-Lite)
-    elif count <= 80: return "razfan", "gemini-2.5-flash-lite"
-    elif count <= 100: return "syamim", "gemini-2.5-flash-lite"
-    else: return "hateem", "gemini-2.5-flash-lite"
+    elif count <= 80:
+        return "razfan", "gemini-2.5-flash-lite"
+    elif count <= 100:
+        return "syamim", "gemini-2.5-flash-lite"
+    else:
+        return "hateem", "gemini-2.5-flash-lite"
+
 
 chat_sessions = {}
 
-@app.route('/chat', methods=['POST'])
+
+@app.route("/chat", methods=["POST"])
 def chat():
     try:
         data = request.json
@@ -60,24 +69,31 @@ def chat():
 
         # Init Session
         if session_id not in chat_sessions:
-            chat_sessions[session_id] = { "chat": None, "count": 0, "owner": None, "model_name": None }
-        
+            chat_sessions[session_id] = {
+                "chat": None,
+                "count": 0,
+                "owner": None,
+                "model_name": None,
+            }
+
         session_data = chat_sessions[session_id]
         session_data["count"] += 1
         current_count = session_data["count"]
 
         # --- ROTATION LOGIC ---
         target_owner, target_model_name = get_rotation_state(current_count)
-        
+
         needs_switch = (
-            session_data["chat"] is None or
-            session_data["owner"] != target_owner or 
-            session_data["model_name"] != target_model_name
+            session_data["chat"] is None
+            or session_data["owner"] != target_owner
+            or session_data["model_name"] != target_model_name
         )
 
         if needs_switch:
-            print(f"[{session_id}] Switching to Owner: {target_owner} | Model: {target_model_name}")
-            
+            print(
+                f"[{session_id}] Switching to Owner: {target_owner} | Model: {target_model_name}"
+            )
+
             old_history = []
             if session_data["chat"] is not None:
                 old_history = session_data["chat"].history
@@ -85,11 +101,13 @@ def chat():
             active_key = KEYS.get(target_owner)
             if not active_key:
                 return jsonify({"reply": f"Missing API Key for {target_owner}!"}), 500
-            
+
             genai.configure(api_key=active_key)
-            new_model = genai.GenerativeModel(model_name=target_model_name, system_instruction=SYSTEM_INSTRUCTION)
+            new_model = genai.GenerativeModel(
+                model_name=target_model_name, system_instruction=SYSTEM_INSTRUCTION
+            )
             session_data["chat"] = new_model.start_chat(history=old_history)
-            
+
             session_data["owner"] = target_owner
             session_data["model_name"] = target_model_name
         else:
@@ -101,8 +119,12 @@ def chat():
 
     except Exception as e:
         print(f"Server Error: {e}")
-        return jsonify({"reply": "The magical scrolls are tangled (Server Error)."}), 500
+        return (
+            jsonify({"reply": "The magical scrolls are tangled (Server Error)."}),
+            500,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)
