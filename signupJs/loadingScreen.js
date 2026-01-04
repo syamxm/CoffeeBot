@@ -1,5 +1,7 @@
 export function showLoadingScreen(action) {
-  const isDarkMode = document.body.classList.contains("dark-mode") || localStorage.getItem("theme") === "dark";
+  const isDarkMode =
+    document.body.classList.contains("dark-mode") ||
+    localStorage.getItem("theme") === "dark";
   const bgColor = isDarkMode ? "#202020" : "#FAF7F2";
   const titleColor = isDarkMode ? "#e0e0e0" : "#4b3621";
   const textColor = isDarkMode ? "#cccccc" : "#6f4e37";
