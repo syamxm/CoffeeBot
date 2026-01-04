@@ -3,7 +3,53 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit User Info</title>
+    <title>User Edit Info</title>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body></body>
+  <body>
+    <script>
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+      }
+    </script>
+    <div class="container">
+      <div class="user-box">
+        <h2>Edit Your Current Info ☕</h2>
+        <form id="editForm">
+          <div class="input-group">
+            <label>Username</label>
+            <input
+              type="text"
+              id="username"
+              required
+              placeholder="Enter your username"
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Current Password</label>
+            <input type="password" id="currentPassword" required />
+          </div>
+
+          <div class="input-group">
+            <label>New Password</label>
+            <input
+              type="password"
+              id="newPassword"
+              placeholder="Leave blank to keep current"
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="confirmNewPassword" />
+          </div>
+
+          <button type="button" id="updateBtn">Update Info</button>
+        </form>
+      </div>
+    </div>
+    <script type="module" src="dashboardJs/"></script>
+  </body>
 </html>
