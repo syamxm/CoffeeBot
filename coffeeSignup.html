@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coffee Signup</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <script>
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+      }
+    </script>
+    <div class="container">
+      <div class="signup-box">
+        <h2>Join Coffee Bot ☕</h2>
+
+        <form id="signupForm">
+          <div class="input-group">
+            <label>Username</label>
+            <input
+              type="text"
+              id="username"
+              required
+              placeholder="Enter your username"
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Email</label>
+            <input
+              type="email"
+              id="email"
+              required
+              placeholder="john@example.com"
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Phone Number (with Country Code)</label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              required
+              placeholder="+60123456789"
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" required />
+          </div>
+
+          <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPassword" required />
+          </div>
+
+          <div id="recaptcha-container"></div>
+
+          <button type="button" id="sendOtpBtn">Send OTP</button>
+
+          <div class="redirect-group">
+            <a href="index.html">Already have an account? Login Now!</a>
+          </div>
+        </form>
+        <div id="otpSection" style="display: none">
+          <p>Enter the code sent to your phone</p>
+          <input type="text" id="otpInput" placeholder="123456" />
+          <button type="button" id="verifyOtpBtn">Verify & Sign Up</button>
+        </div>
+
+        <p id="statusMessage"></p>
+      </div>
+    </div>
+    <script type="module" src="signupJs/signupScript.js"></script>
+  </body>
+</html>

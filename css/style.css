@@ -1,0 +1,122 @@
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f1e6d8; /* Latte color */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.signup-box,
+.login-box,
+.user-box {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h2 {
+  color: #4b3621; /* Coffee bean color */
+}
+
+.input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: #666;
+  font-size: 0.9em;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #6f4e37; /* Coffee color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+button:hover {
+  background-color: #5a3e2b;
+}
+
+/* redirect message*/
+.redirect-group {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.redirect-group a {
+  color: #6f4e37; /* Matches your coffee theme primary color */
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.redirect-group a:hover {
+  color: #4b3621; /* Darker roast color on hover */
+  text-decoration: underline;
+}
+
+/* Dark Mode Support */
+body.dark-mode .redirect-group a {
+  color: #e2d1c3; /* Lighter cream color for dark backgrounds */
+}
+
+body.dark-mode .redirect-group a:hover {
+  color: #ffffff;
+}
+
+#statusMessage {
+  margin-top: 15px;
+  font-size: 0.9em;
+  color: #d9534f;
+}
+
+/* Dark Mode */
+body.dark-mode {
+  background-color: #202020;
+}
+
+body.dark-mode .signup-box,
+body.dark-mode .login-box,
+body.dark-mode .user-box {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+
+body.dark-mode h2,
+body.dark-mode label {
+  color: #e0e0e0;
+}
+
+body.dark-mode input {
+  background-color: #333;
+  border-color: #444;
+  color: #fff;
+}
