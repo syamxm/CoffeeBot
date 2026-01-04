@@ -1,7 +1,7 @@
 const chatHistory = document.getElementById("chat-history");
 const recentList = document.getElementById("recent-list");
 const initialSection = document.getElementById("initial-section");
-const dashboardWrapper = document.querySelector(".dashboard-wrapper");
+const dashboardWrapper = document.querySelector(".dashboard-container");
 
 //Theme Toggle for dark mode
 const themeToggle = document.getElementById("theme-toggle");

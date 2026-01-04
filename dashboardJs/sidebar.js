@@ -2,16 +2,13 @@
 //added imports for logout functionality
 import { auth } from "../firebase/firebaseConfig.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import * as loadingScreen from "../signupJs/loadingScreen.js";
 
 const newChatBtn = document.getElementById("new-chat-btn");
 const dashboardContainer = document.querySelector(".dashboard-container");
 const initialSection = document.getElementById("initial-section");
 const chatHistory = document.getElementById("chat-history");
 const userInput = document.getElementById("user-input");
-
-const settingsBtn = document.getElementById("settings-btn");
-const settingsModal = document.getElementById("settings-modal");
-const closeSettingsBtn = document.getElementById("close-settings");
 
 const logoutBtn = document.getElementById("logout-btn");
 
@@ -20,40 +17,33 @@ newChatBtn.addEventListener("click", () => {
   dashboardContainer.classList.remove("chat-active");
   initialSection.classList.remove("hidden");
   chatHistory.classList.remove("visible");
-  chatHistory.innerHTML = ""; // Clear chat history
+  
+  // Robustly clear chat history to ensure no nodes remain
+  while (chatHistory.firstChild) {
+    chatHistory.removeChild(chatHistory.firstChild);
+  }
+
   userInput.value = "";
   userInput.focus();
+
+  // Clear active selection from sidebar items
+  document.querySelectorAll(".recent-item").forEach(item => item.classList.remove("active"));
 });
 
-// Move modal to body to ensure it sits on top of everything (fixes z-index stacking)
-document.body.appendChild(settingsModal);
-
-// Settings Modal Logic
-settingsBtn.addEventListener("click", () => {
-  settingsModal.classList.remove("hidden");
-});
-
-closeSettingsBtn.addEventListener("click", () => {
-  settingsModal.classList.add("hidden");
-});
-
-// Close modal when clicking outside content
-window.addEventListener("click", (e) => {
-  if (e.target === settingsModal) {
-    settingsModal.classList.add("hidden");
-  }
-});
 
 // Logout Functionality
 if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      console.log("User signed out");
-      window.location.href = "index.html"; // Redirect after logout
-    } catch (error) {
-      console.error("Sign out failed:", error);
-    }
+  logoutBtn.addEventListener("click", () => {
+    loadingScreen.showLoadingScreen("logout");
+
+    // Delay sign out to allow the loading screen animation to play
+    setTimeout(async () => {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Sign out failed:", error);
+      }
+    }, 1500);
   });
 } else {
   console.error("Logout button not found in DOM");

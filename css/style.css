@@ -1,6 +1,6 @@
 body {
   font-family: "Segoe UI", sans-serif;
-  background-color: #f3e5ab; /* Latte color */
+  background-color: #F1E6D8; /* Latte color */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -62,6 +62,35 @@ button {
 button:hover {
   background-color: #5a3e2b;
 }
+
+/* redirect message*/
+.redirect-group {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.redirect-group a {
+  color: #6f4e37; /* Matches your coffee theme primary color */
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.redirect-group a:hover {
+  color: #4b3621; /* Darker roast color on hover */
+  text-decoration: underline;
+}
+
+/* Dark Mode Support */
+body.dark-mode .redirect-group a {
+  color: #e2d1c3; /* Lighter cream color for dark backgrounds */
+}
+
+body.dark-mode .redirect-group a:hover {
+  color: #ffffff;
+}
+
 
 #statusMessage {
   margin-top: 15px;
