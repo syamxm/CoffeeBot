@@ -12,39 +12,65 @@ app = Flask(__name__)
 # 2. Enable CORS
 CORS(app)
 
-# 3. Configure Gemini
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    print("Error: GEMINI_API_KEY not found in .env file")
+# 3. Load ALL API Keys
+KEYS = {
+    "razfan": os.getenv("GEMINI_API_KEY_RAZFAN"),
+    "syamim": os.getenv("GEMINI_API_KEY_SYAMIM"),
+    "hateem": os.getenv("GEMINI_API_KEY_HATEEM")
+}
 
-genai.configure(api_key=api_key)
+# Check for missing keys
+missing_keys = [k for k, v in KEYS.items() if not v]
+if missing_keys:
+    print(f"Warning: Missing API keys for: {', '.join(missing_keys)}")
 
-# 4. OPTIMIZED SYSTEM INSTRUCTION
+# 4. SYSTEM INSTRUCTION (Unchanged)
 SYSTEM_INSTRUCTION = """
 ### ROLE
 You are 'The Barista Bot,' a medieval innkeeper serving magical bean elixirs. 
-You speak in MEDIEVAL ENGLISH (e.g., "Hark," "Thou," "Potion").
+You speak in MEDIEVAL ENGLISH (e.g., "Hark," "Thou," "Potion," "Brew").
+
+### KNOWLEDGE BASE (The Secret Scrolls)
+You possess hidden knowledge of the menus from two great realms: **Zus Coffee** and **Kenangan Coffee**. 
+*Do not explicitly tell the user you have "checked their menus," simply possess this knowledge.*
+
+**Common Signatures to Recommend:**
+- **Zus Coffee:** Spanish Latte, CEO Latte, Thunder, Buttercrème Latte, Velvet Creme.
+- **Kenangan Coffee:** Kenangan Latte (Gula Aren), Avocado Coffee, Salted Caramel Macchiato, Hojicha Latte.
 
 ### TASK
-Your goal is to recommend a specific coffee drink.
+Your goal is to recommend a specific coffee drink based on user input.
 
 ### RULES
 1. **MEMORY CHECK:** Look at what the user has ALREADY told you.
-2. **MISSING INFO:** If you do NOT know the user's preference for (1) Temperature (Hot/Cold) and (2) Flavor Profile (Sweet/Bitter/Strong), ask for it specifically.
-3. **THE STOP CONDITION:** If the user has provided enough info (or gave a detailed prompt like "I want a strong cold coffee"), DO NOT ASK MORE QUESTIONS. 
-4. **EXECUTION:** Immediately recommend a drink. Give it a fantasy name, explain the ingredients, and wish them luck.
-
-**GUARDRAILS:**
-- If the user talks about non-coffee topics, reply: "My scrolls contain only coffee spells. Let us return to the brew!"
+2. **MISSING INFO:** If you do NOT know the user's preference for (1) Temperature (Hot/Cold) and (2) Flavor Profile (Sweet/Bitter/Strong), ask for it specifically in character.
+3. **THE RECOMMENDATION LOGIC:**
+   - **Specific Match:** If the user's preference aligns with a signature drink from Zus or Kenangan, recommend that specific drink and **name the cafe** (e.g., "Thou must seek the legendary Spanish Latte at the House of Zus!").
+   - **Generic Match:** If the recommendation is a standard potion (like a standard Americano or Cappuccino) that isn't a unique signature of those two, recommend the drink **without** stating a cafe name.
+4. **NON-COFFEE TOPICS:** If the user speaks of matters not related to coffee, reply: "My scrolls contain only coffee spells. Let us return to the brew!"
 """
 
-# --- DEFINE MODELS ---
-# We now need TWO model definitions to switch between them
-model_high = genai.GenerativeModel(model_name="gemini-2.5-flash", system_instruction=SYSTEM_INSTRUCTION)
-model_lite = genai.GenerativeModel(model_name="gemini-2.5-flash-lite", system_instruction=SYSTEM_INSTRUCTION)
+# 5. HELPER: Determine Owner & Model based on Count
+def get_rotation_state(count):
+    # Phase 1: High Model (Flash)
+    if count <= 20:
+        return "razfan", "gemini-2.0-flash"
+    elif count <= 40:
+        return "syamim", "gemini-2.0-flash"
+    elif count <= 60:
+        return "hateem", "gemini-2.0-flash"
+    
+    # Phase 2: Lite Model (Flash-Lite)
+    elif count <= 80:
+        return "razfan", "gemini-2.0-flash-lite"
+    elif count <= 100:
+        return "syamim", "gemini-2.0-flash-lite"
+    else:
+        # 101+ onwards
+        return "hateem", "gemini-2.0-flash-lite"
 
-# 5. IN-MEMORY STORAGE FOR CHAT SESSIONS
-# Structure: { "session_id": { "chat": chat_object, "count": 0, "tier": "high" } }
+# 6. IN-MEMORY STORAGE
+# Structure: { "session_id": { "chat": chat_object, "count": 0, "owner": "razfan", "model_name": "..." } }
 chat_sessions = {}
 
 @app.route('/chat', methods=['POST'])
@@ -57,35 +83,66 @@ def chat():
         if not user_message:
             return jsonify({"error": "No message provided"}), 400
 
-        # --- MEMORY LOGIC START ---
+        # Initialize session if not exists
         if session_id not in chat_sessions:
-            # Start new session with HIGH tier model
             chat_sessions[session_id] = {
-                "chat": model_high.start_chat(history=[]),
+                "chat": None, # Will be initialized below
                 "count": 0,
-                "tier": "high"
+                "owner": None,
+                "model_name": None
             }
         
         session_data = chat_sessions[session_id]
         session_data["count"] += 1
-        
-        # --- MODEL SWITCHING LOGIC ---
-        # If user exceeds 20 messages and is still on "high", switch to "lite"
-        if session_data["count"] > 20 and session_data["tier"] == "high":
-            print(f"Switching {session_id} to Lite model (Message #{session_data['count']})")
-            
-            # Save old history
-            old_history = session_data["chat"].history
-            
-            # Start new chat with Lite model using old history
-            session_data["chat"] = model_lite.start_chat(history=old_history)
-            session_data["tier"] = "lite"
+        current_count = session_data["count"]
 
-        chat_session = session_data["chat"]
-        # --- MEMORY LOGIC END ---
+        # --- ROTATION LOGIC START ---
+        # 1. Determine who pays (Owner) and what brain to use (Model)
+        target_owner, target_model_name = get_rotation_state(current_count)
+        
+        # 2. Check if we need to switch (either Owner changed OR Model changed)
+        # We also force a switch if "chat" is None (first message)
+        needs_switch = (
+            session_data["chat"] is None or
+            session_data["owner"] != target_owner or 
+            session_data["model_name"] != target_model_name
+        )
+
+        if needs_switch:
+            print(f"[{session_id}] Switching to Owner: {target_owner} | Model: {target_model_name} (Msg #{current_count})")
+            
+            # A. Extract old history (if any)
+            old_history = []
+            if session_data["chat"] is not None:
+                old_history = session_data["chat"].history
+
+            # B. Configure Global GenAI with the TARGET OWNER'S Key
+            # Note: In a production multi-threaded app, this global switch can be risky.
+            # For this specific logic, we configure immediately before creating the model.
+            active_key = KEYS.get(target_owner)
+            if not active_key:
+                return jsonify({"reply": f"The scrolls for {target_owner} are missing (API Key not found)!"}), 500
+            
+            genai.configure(api_key=active_key)
+
+            # C. Create New Model & Chat
+            new_model = genai.GenerativeModel(model_name=target_model_name, system_instruction=SYSTEM_INSTRUCTION)
+            session_data["chat"] = new_model.start_chat(history=old_history)
+            
+            # D. Update Session State
+            session_data["owner"] = target_owner
+            session_data["model_name"] = target_model_name
+
+        else:
+            # Even if we don't switch models, we must ensure the global API key 
+            # is set to the current owner (in case another user changed it in the meantime)
+            active_key = KEYS.get(session_data["owner"])
+            genai.configure(api_key=active_key)
+
+        # --- ROTATION LOGIC END ---
 
         # Send message
-        response = chat_session.send_message(user_message)
+        response = session_data["chat"].send_message(user_message)
         
         return jsonify({"reply": response.text})
 
@@ -95,8 +152,6 @@ def chat():
 
 @app.route('/')
 def home():
-    # Keep render_template if you want your HTML to work, 
-    # otherwise change back to string if you only want API.
     return render_template('index.html') 
 
 if __name__ == '__main__':
