@@ -14,9 +14,9 @@ CORS(app)
 
 # 3. Load Keys
 KEYS = {
-    "razfan": os.getenv("GEMINI_API_KEY_RAZFAN"),
-    "syamim": os.getenv("GEMINI_API_KEY_SYAMIM"),
-    "hateem": os.getenv("GEMINI_API_KEY_HATEEM"),
+    "razfan": os.getenv("GOOGLE_API_KEY_RAZFAN"),
+    "syamim": os.getenv("GOOGLE_API_KEY_SYAMIM"),
+    "hateem": os.getenv("GOOGLE_API_KEY_HATEEM"),
 }
 
 # 4. System Instruction
