@@ -38,6 +38,13 @@
       <div class="chat-interface">
         <div class="initial-section" id="initial-section">
           <p class="welcome-user" id="welcome-user">Greetings user</p>
+          <script>
+            const cachedName = localStorage.getItem("username");
+            if (cachedName) {
+              document.getElementById("welcome-user").textContent =
+                `Greetings ${cachedName}`;
+            }
+          </script>
           <p>Shall we get brewing?</p>
         </div>
         <div class="chat-history" id="chat-history"></div>
