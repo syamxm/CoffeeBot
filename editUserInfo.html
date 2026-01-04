@@ -28,6 +28,12 @@
               required
               placeholder="Enter your username"
             />
+            <script>
+              const cachedName = localStorage.getItem("username");
+              if (cachedName) {
+                document.getElementById("username").value = cachedName;
+              }
+            </script>
           </div>
 
           <div class="input-group">
