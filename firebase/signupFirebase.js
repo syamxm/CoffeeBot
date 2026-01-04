@@ -27,7 +27,7 @@ export async function sendOtp(phoneNumber, appVerifier) {
   const confirmationResult = await signInWithPhoneNumber(
     auth,
     phoneNumber,
-    appVerifier
+    appVerifier,
   );
   return confirmationResult;
 }
