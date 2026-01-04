@@ -1,6 +1,6 @@
 body {
   font-family: "Segoe UI", sans-serif;
-  background-color: #F1E6D8; /* Latte color */
+  background-color: #f1e6d8; /* Latte color */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,7 +14,8 @@ body {
 }
 
 .signup-box,
-.login-box {
+.login-box,
+.user-box {
   background: white;
   padding: 30px;
   border-radius: 10px;
@@ -91,7 +92,6 @@ body.dark-mode .redirect-group a:hover {
   color: #ffffff;
 }
 
-
 #statusMessage {
   margin-top: 15px;
   font-size: 0.9em;
@@ -104,7 +104,8 @@ body.dark-mode {
 }
 
 body.dark-mode .signup-box,
-body.dark-mode .login-box {
+body.dark-mode .login-box,
+body.dark-mode .user-box {
   background-color: #2d2d2d;
   color: #e0e0e0;
 }
