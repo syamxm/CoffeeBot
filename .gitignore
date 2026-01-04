@@ -12,3 +12,6 @@ package.json
 
 #ignoring .env file
 .env
+
+#ignoring prettier config file
+.prettierrc
