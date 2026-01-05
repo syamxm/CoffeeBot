@@ -15,8 +15,11 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-//const SERVER_URL = "https://coffeebot-70fh.onrender.com/chat";
-const SERVER_URL = "http://127.0.0.1:5000/chat";
+const SERVER_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:5000/chat"
+    : "https://coffeebot-70fh.onrender.com/chat";
 
 export async function getChatMessages(userId, chatId) {
   const docRef = doc(db, "users", userId, "chats", chatId);
